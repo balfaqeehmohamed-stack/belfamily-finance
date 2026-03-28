@@ -1838,6 +1838,7 @@ let ptSelectedCat = PT_CATS[0];
 
 function getPTMonthKey(offset) {
   const d = new Date();
+  d.setDate(1); // Prevent month overflow (e.g. Mar 29 → Feb has no 29th in non-leap year)
   d.setMonth(d.getMonth() + (offset || 0));
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
 }
