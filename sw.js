@@ -1,6 +1,6 @@
 // BelFamily Finance — Service Worker (Offline support)
-const CACHE = 'belfamily-v7';
-const ASSETS = ['./config.js', './manifest.json'];
+const CACHE = 'belfamily-v8';
+const ASSETS = ['./manifest.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
@@ -15,8 +15,8 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  // index.html — always network-first so both phones always get the latest version
-  if (e.request.mode === 'navigate' || e.request.url.endsWith('index.html') || e.request.url.endsWith('/')) {
+  // index.html + config.js — always network-first so updates are picked up immediately
+  if (e.request.mode === 'navigate' || e.request.url.endsWith('index.html') || e.request.url.endsWith('/') || e.request.url.endsWith('config.js')) {
     e.respondWith(
       fetch(e.request)
         .then(r => { caches.open(CACHE).then(c => c.put(e.request, r.clone())); return r; })
