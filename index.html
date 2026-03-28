@@ -1045,18 +1045,20 @@ function initFirebase() {
       if (!remote) { showSyncStatus('synced'); return; }
       // Skip if data matches what we already have (our own write echoed back)
       if (JSON.stringify(remote) === JSON.stringify(state)) { showSyncStatus('synced'); return; }
-      state = { ...defaultState(), ...remote };
+      const localUser = state.user; // preserve local user — each device picks its own
+      state = { ...defaultState(), ...remote, user: localUser };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       renderAll();
       showSyncStatus('synced');
     }, (err) => { console.error('Firebase listener error:', err); showSyncStatus('offline'); });
-    // Fallback: if listener hasn't fired in 5s, push local state up
+    // Fallback: if listener hasn't fired in 5s, pull remote state
     setTimeout(() => {
       if (document.getElementById('sync-status')?.textContent?.includes('Connecting')) {
         _db.ref(FB_PATH).once('value').then(snap => {
           const remote = snap.val();
           if (remote) {
-            state = { ...defaultState(), ...remote };
+            const localUser = state.user;
+            state = { ...defaultState(), ...remote, user: localUser };
             localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
             renderAll();
           }
@@ -1077,7 +1079,8 @@ function initFirebase() {
             const remote = snap.val();
             if (!remote) { showSyncStatus('synced'); return; }
             if (JSON.stringify(remote) === JSON.stringify(state)) { showSyncStatus('synced'); return; }
-            state = { ...defaultState(), ...remote };
+            const localUser = state.user;
+            state = { ...defaultState(), ...remote, user: localUser };
             localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
             renderAll();
             showSyncStatus('synced');
@@ -1101,7 +1104,8 @@ function saveState() {
   _saveTimer = setTimeout(() => {
     if (!_db) return;
     showSyncStatus('syncing');
-    _db.ref(FB_PATH).set(state)
+    const { user, ...syncData } = state; // don't sync user — each device keeps its own
+    _db.ref(FB_PATH).set(syncData)
       .then(() => showSyncStatus('synced'))
       .catch(() => showSyncStatus('offline'));
   }, 500);
