@@ -1203,17 +1203,22 @@ function renderHome() {
     <div class="ctd-box"><div class="ctd-n">${dy}</div><div class="ctd-l">days</div></div>
   `;
 
-  // Phase banner
-  const idx=findCurrentMonthIdx();
+  // Phase banner — based on TODAY's date, not payment status
+  const nowStr=localDateStr(now);
+  let currentPhaseMonth=null;
+  for(let i=sched.length-1;i>=0;i--){
+    if(nowStr>=sched[i].date){ currentPhaseMonth=sched[i]; break; }
+  }
   let bannerHTML='';
-  if(idx===-1){
+  if(!currentPhaseMonth){
     const salaryDate=new Date(now.getFullYear(),now.getMonth(),FINANCE_CONFIG.income.salaryDayOfMonth);
     const daysToSalary=daysBetween(now,salaryDate);
     const firstPayment=sched.find(m=>m.id!=='m00');
     bannerHTML=`<div class="pb pb-pre">💼 Salary arrives in <strong>${daysToSalary} days</strong> (${formatDate(localDateStr(salaryDate))}) — First payment: ${firstPayment?formatDate(firstPayment.date):''}</div>`;
   } else {
-    const m=sched[idx];
-    if(m.phase==='CC Priority')  bannerHTML=`<div class="pb pb-cc">🔴 CC PRIORITY PHASE — Every dirham of surplus attacks the CC first</div>`;
+    const m=currentPhaseMonth;
+    if(m.phase==='Pre-Payment')  bannerHTML=`<div class="pb pb-pre">💼 PRE-PAYMENT PHASE — Building momentum for debt attack</div>`;
+    else if(m.phase==='CC Priority')  bannerHTML=`<div class="pb pb-cc">🔴 CC PRIORITY PHASE — Every dirham of surplus attacks the CC first</div>`;
     else if(m.phase==='FAB Priority') bannerHTML=`<div class="pb pb-fab">🟡 FAB PRIORITY PHASE — CC cleared! Full surplus reducing FAB loan</div>`;
     else bannerHTML=`<div class="pb pb-free">🟢 DEBT FREE! You did it — congratulations! 🏆</div>`;
   }
