@@ -1899,7 +1899,7 @@ function openPTModal() {
   document.getElementById('pt-cat-chips').innerHTML = PT_CATS.map(c =>
     `<div class="chip ${c===ptSelectedCat?'active':''}" onclick="selectPTCat(this,'${c}')">${c}</div>`
   ).join('');
-  setTimeout(() => document.getElementById('pt-amount').focus(), 200);
+  setTimeout(() => document.getElementById('pt-amount').focus({preventScroll:true}), 200);
 }
 
 function closePTModal() {
