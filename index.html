@@ -827,29 +827,6 @@ tbody td { padding:9px 12px; vertical-align:middle; color:var(--t1) }
   <div class="sl">🧾 MY SPENDING</div>
   <div class="card" id="pt-card" style="padding:18px"></div>
 
-  <!-- ── Add Expense Modal ── -->
-  <div id="pt-modal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.45);align-items:center;justify-content:center">
-    <div style="background:var(--surface);border-radius:20px;padding:24px 20px 28px;width:calc(100% - 32px);max-width:420px;max-height:85vh;overflow-y:auto">
-      <div style="font-size:16px;font-weight:800;margin-bottom:18px;color:var(--t1)">Add Expense</div>
-      <div class="ig">
-        <div class="il">Amount (AED)</div>
-        <input id="pt-amount" type="number" inputmode="decimal" class="ipt" placeholder="e.g. 150" style="font-size:18px;font-weight:700">
-      </div>
-      <div class="ig">
-        <div class="il">Description</div>
-        <input id="pt-desc" type="text" class="ipt" placeholder="e.g. Coffee, Lunch, Shopping">
-      </div>
-      <div class="ig">
-        <div class="il">Category</div>
-        <div id="pt-cat-chips" style="display:flex;flex-wrap:wrap;gap:8px"></div>
-      </div>
-      <div style="display:flex;gap:10px;margin-top:18px">
-        <button class="btn btn-ghost" style="flex:1" onclick="closePTModal()">Cancel</button>
-        <button class="btn btn-primary" style="flex:1" onclick="savePTExpense()">Add</button>
-      </div>
-    </div>
-  </div>
-
   <div class="sl" style="margin-top:4px">📊 FIXED EXPENSES</div>
   <div class="card" style="text-align:center;padding:20px 18px">
     <div class="sl" style="padding:0 0 12px;text-align:center">Monthly Fixed Expenses</div>
@@ -937,6 +914,29 @@ tbody td { padding:9px 12px; vertical-align:middle; color:var(--t1) }
     <div class="sg-lbl">About</div>
     <div class="sr" style="cursor:default"><span class="sr-l">Version</span><span class="sr-r">1.0.0</span></div>
     <div class="sr" style="cursor:default"><span class="sr-l">Built for</span><span class="sr-r">Mohamed & Fatima 💙</span></div>
+  </div>
+</div>
+
+<!-- ── Add Expense Modal (root level for iOS fixed positioning) ── -->
+<div id="pt-modal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.45);align-items:center;justify-content:center">
+  <div style="background:var(--surface);border-radius:20px;padding:24px 20px 28px;width:calc(100% - 32px);max-width:420px;max-height:85vh;overflow-y:auto">
+    <div style="font-size:16px;font-weight:800;margin-bottom:18px;color:var(--t1)">Add Expense</div>
+    <div class="ig">
+      <div class="il">Amount (AED)</div>
+      <input id="pt-amount" type="number" inputmode="decimal" class="ipt" placeholder="e.g. 150" style="font-size:18px;font-weight:700">
+    </div>
+    <div class="ig">
+      <div class="il">Description</div>
+      <input id="pt-desc" type="text" class="ipt" placeholder="e.g. Coffee, Lunch, Shopping">
+    </div>
+    <div class="ig">
+      <div class="il">Category</div>
+      <div id="pt-cat-chips" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:18px">
+      <button class="btn btn-ghost" style="flex:1" onclick="closePTModal()">Cancel</button>
+      <button class="btn btn-primary" style="flex:1" onclick="savePTExpense()">Add</button>
+    </div>
   </div>
 </div>
 
