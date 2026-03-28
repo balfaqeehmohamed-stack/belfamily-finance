@@ -81,10 +81,8 @@ const FINANCE_CONFIG = {
     { id: "etisalat",     name: "Etisalat (Mobile + Internet)",  amount: 1000,   category: "Utilities",     paused: false },
     { id: "electricity",  name: "DEWA — Electricity & Water",    amount: 1500,   category: "Utilities",     paused: false },
     // FAMILY
-    { id: "fatima_all",   name: "Fatima Allowance",              amount: 3000,   category: "Family",        paused: false },
-    { id: "mom_all",      name: "Mom Allowance",                 amount: 0,      category: "Family",        paused: true,
-      restoreAmount: 1500,  restoreDate: "2026-09-25",
-      note: "PAUSED — restore to AED 1,500 on 25 Sep 2026 (after CC cleared)" },
+    { id: "fatima_all",   name: "Fatima Allowance",              amount: 1500,   category: "Family",        paused: false },
+    { id: "mom_all",      name: "Mom Allowance",                 amount: 1500,   category: "Family",        paused: false },
     // SAVINGS
     { id: "baby_saving",  name: "Baby Saving",                   amount: 1500,   category: "Savings",       paused: false,
       restoreAmount: 2000,  restoreDate: "2027-01-27",
