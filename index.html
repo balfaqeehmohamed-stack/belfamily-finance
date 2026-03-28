@@ -8,6 +8,8 @@
   <meta name="apple-mobile-web-app-title" content="BelFamily Finance">
   <meta name="theme-color" content="#EEF2FF">
   <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
   <title>BelFamily Finance</title>
   <style>
 /* ════════════════════════════════════════════════════════════
@@ -1932,6 +1934,10 @@ function savePTExpense() {
   closePTModal();
   renderPersonalTracker();
   showToast(`✅ −${fmtA(amount)} logged`);
+  setTimeout(() => {
+    document.getElementById('tab-budget').scrollTop = 0;
+    window.scrollTo(0, 0);
+  }, 150);
 }
 
 function deletePTExpense(monthKey, idx) {
