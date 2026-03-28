@@ -1258,6 +1258,7 @@ function renderHome() {
   document.getElementById('phase-banner').innerHTML=bannerHTML;
 
   // Stats
+  const idx=findCurrentMonthIdx();
   const live=getLiveBalances();
   const totalDebt=live.cc+live.fab;
   const nextUnpaid=idx>=0?sched[idx]:null;
