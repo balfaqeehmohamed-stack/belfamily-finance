@@ -2020,11 +2020,56 @@ function filterCat(cat) { selectedCategory=cat; renderBudget(); }
 const PT_CATS = ['🍔 Food','☕ Coffee','🛍️ Shopping','🚕 Transport','🎮 Fun','📦 Other'];
 let ptSelectedCat = PT_CATS[0];
 
+// ── Salary-cycle helpers ──────────────────────────────
+// Budget cycle: 27th of each month → 26th of next month
+// If 27th falls on Fri(5) or Sat(6) in UAE, use closest Thu/Wed before
+function getSalaryCycleDay(year, month) {
+  // month is 0-indexed (JS Date style)
+  const day = FINANCE_CONFIG.income.salaryDayOfMonth || 27;
+  const d = new Date(year, month, day);
+  const dow = d.getDay(); // 0=Sun,1=Mon,...,5=Fri,6=Sat
+  // UAE weekend: Fri(5) + Sat(6) → salary moves to Thursday before
+  if (dow === 5) d.setDate(day - 1);      // Fri → Thu
+  else if (dow === 6) d.setDate(day - 2); // Sat → Thu
+  return d;
+}
+
+// Returns { key, startDate, endDate, label } for the cycle at offset from current
+function getPTCycle(offset) {
+  const now = new Date();
+  // Determine which cycle "now" falls in:
+  // If today >= salary day this month → current cycle started this month
+  // If today < salary day this month → current cycle started last month
+  const salaryThisMonth = getSalaryCycleDay(now.getFullYear(), now.getMonth());
+  let cycleBase = new Date(now);
+  if (now < salaryThisMonth) {
+    // We're before this month's salary day → cycle started last month
+    cycleBase.setDate(1);
+    cycleBase.setMonth(cycleBase.getMonth() - 1);
+  }
+  // Apply offset
+  cycleBase.setDate(1); // prevent overflow
+  cycleBase.setMonth(cycleBase.getMonth() + (offset || 0));
+
+  const startDate = getSalaryCycleDay(cycleBase.getFullYear(), cycleBase.getMonth());
+  // End date: day before next cycle's salary day
+  const nextMonth = new Date(cycleBase.getFullYear(), cycleBase.getMonth() + 1, 1);
+  const endDate = new Date(getSalaryCycleDay(nextMonth.getFullYear(), nextMonth.getMonth()));
+  endDate.setDate(endDate.getDate() - 1);
+  endDate.setHours(23, 59, 59, 999);
+
+  // Key format: YYYY-MM based on cycle start month
+  const key = startDate.getFullYear() + '-' + String(startDate.getMonth() + 1).padStart(2, '0');
+
+  // Label: "27 Mar – 26 Apr"
+  const fmtShort = d => d.getDate() + ' ' + d.toLocaleString('en', { month: 'short' });
+  const label = fmtShort(startDate) + ' – ' + fmtShort(endDate) + ' ' + endDate.getFullYear();
+
+  return { key, startDate, endDate, label };
+}
+
 function getPTMonthKey(offset) {
-  const d = new Date();
-  d.setDate(1); // Prevent month overflow (e.g. Mar 29 → Feb has no 29th in non-leap year)
-  d.setMonth(d.getMonth() + (offset || 0));
-  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+  return getPTCycle(offset).key;
 }
 
 let ptMonthOffset = 0;
@@ -2042,10 +2087,10 @@ function getPTExpenses(monthKey) {
   return (state.personalExpenses[user + '_' + monthKey] || []);
 }
 
-// Calculate effective budget for a month (base allowance + carryover from previous month)
+// Calculate effective budget for a cycle (base allowance + carryover from previous cycle)
 function getPTBudget(monthKey) {
   const base = getBaseAllowance();
-  // Walk backwards to find carryover chain (up to 12 months back)
+  // Walk backwards to find carryover chain (up to 12 cycles back)
   const [yr, mo] = monthKey.split('-').map(Number);
   let carryover = 0;
   for (let i = 1; i <= 12; i++) {
@@ -2062,9 +2107,9 @@ function getPTBudget(monthKey) {
 }
 
 function renderPersonalTracker() {
-  const monthKey = getPTMonthKey(ptMonthOffset);
-  const [yr, mo] = monthKey.split('-');
-  const monthLabel = new Date(yr, mo-1).toLocaleString('en', {month:'long', year:'numeric'});
+  const cycle = getPTCycle(ptMonthOffset);
+  const monthKey = cycle.key;
+  const monthLabel = cycle.label;
   const { base, carryover, total: budget } = getPTBudget(monthKey);
   const expenses = getPTExpenses(monthKey);
   const spent = expenses.reduce((s, e) => s + e.amount, 0);
@@ -2089,17 +2134,17 @@ function renderPersonalTracker() {
         <div class="pt-sub">used</div>
       </div>
     </div>
-    ${carryover > 0 ? `<div style="font-size:11px;color:var(--green);font-weight:700;margin-bottom:4px">✨ Includes ${fmtA(carryover)} carryover from last month</div>` : ''}
-    <div style="font-size:11px;color:var(--t4);margin-bottom:6px">Base allowance: ${fmtA(base)}/month</div>
+    ${carryover > 0 ? `<div style="font-size:11px;color:var(--green);font-weight:700;margin-bottom:4px">✨ Includes ${fmtA(carryover)} carryover from last cycle</div>` : ''}
+    <div style="font-size:11px;color:var(--t4);margin-bottom:6px">Base allowance: ${fmtA(base)}/cycle</div>
     <div class="pt-bar-bg" role="progressbar" aria-valuenow="${pct.toFixed(0)}" aria-valuemin="0" aria-valuemax="100"><div class="pt-bar" style="width:${pct}%;background:${barColor}"></div></div>
     <div class="pt-stats">
       <span class="pt-spent">Spent: ${fmtA(spent)}</span>
       <span class="pt-remain">Left: ${fmtA(remaining)}</span>
     </div>
-    ${expenses.length > 0 ? `<div style="text-align:center;font-size:11px;color:var(--t4);margin-bottom:4px">${expenses.length} transaction${expenses.length !== 1 ? 's' : ''} this month</div>` : ''}
+    ${expenses.length > 0 ? `<div style="text-align:center;font-size:11px;color:var(--t4);margin-bottom:4px">${expenses.length} transaction${expenses.length !== 1 ? 's' : ''} this cycle</div>` : ''}
     ${(() => {
-      const prevKey = getPTMonthKey(ptMonthOffset - 1);
-      const prevExp = getPTExpenses(prevKey);
+      const prevCycle = getPTCycle(ptMonthOffset - 1);
+      const prevExp = getPTExpenses(prevCycle.key);
       const prevSpent = prevExp.reduce((s, e) => s + e.amount, 0);
       if (expenses.length > 0 && prevExp.length > 0 && prevSpent > 0) {
         const change = ((spent - prevSpent) / prevSpent * 100).toFixed(0);
